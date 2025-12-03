@@ -16,21 +16,28 @@ public class CategoriaController {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
-    // Listar todas
     @GetMapping
-    public List<Categoria> listarCategorias() {
+    public List<Categoria> listar() {
         return categoriaRepository.findAll();
     }
 
-    // Crear categoría (Solo Admin)
     @PostMapping
-    public Categoria crearCategoria(@RequestBody Categoria categoria) {
+    public Categoria crear(@RequestBody Categoria categoria) {
         return categoriaRepository.save(categoria);
     }
 
-    // Eliminar categoría
+    @PutMapping("/{id}")
+    public ResponseEntity<Categoria> actualizar(@PathVariable Long id, @RequestBody Categoria detalles) {
+        return categoriaRepository.findById(id).map(cat -> {
+            cat.setNombre(detalles.getNombre());
+            cat.setImagen(detalles.getImagen());
+            return ResponseEntity.ok(categoriaRepository.save(cat));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarCategoria(@PathVariable Long id) {
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+        if (!categoriaRepository.existsById(id)) return ResponseEntity.notFound().build();
         categoriaRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }

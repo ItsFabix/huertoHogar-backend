@@ -1,5 +1,6 @@
 package com.example.huertohogar_bd.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -18,7 +19,9 @@ public class Producto {
     private Integer precio;
     private Integer stock;
     private String descripcion;
-    private String imagen;
     private Boolean oferta;
     private Integer precioOferta;
+
+    @Column(columnDefinition = "LONGTEXT") // Agrega esta anotación
+    private String imagen;
 }

@@ -34,25 +34,29 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    // Endpoint para Registro
     @PostMapping("/register")
     public ResponseEntity<?> registrarUsuario(@RequestBody Usuario usuario) {
         if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("El email ya existe");
         }
-        // Encriptamos la contraseña antes de guardar
+        // Encriptar contraseña
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
-        // Asignamos rol por defecto si no viene
+        
+        // Asignar rol por defecto si no viene
         if (usuario.getRol() == null || usuario.getRol().isEmpty()) {
             usuario.setRol("cliente");
         }
+        
         Usuario nuevoUsuario = usuarioRepository.save(usuario);
         return ResponseEntity.ok(nuevoUsuario);
     }
 
+    // Endpoint para Login
     @PostMapping("/login")
     public ResponseEntity<?> crearToken(@RequestBody LoginRequest request) throws Exception {
         try {
-            // Esto verifica email y contraseña automáticamente
+            // Validar credenciales con Spring Security
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
@@ -60,13 +64,18 @@ public class AuthController {
             throw new Exception("Credenciales incorrectas", e);
         }
 
+        // Cargar detalles del usuario para el token
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         
-        // Obtenemos el rol del usuario (asumiendo que tiene uno solo para simplificar)
-        String rol = userDetails.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
+        // Buscar el usuario completo en la BD para obtener sus datos extra (nombre, rol)
+        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new Exception("Usuario no encontrado en BD"));
         
-        final String jwt = jwtUtil.generateToken(userDetails.getUsername(), rol);
+        // Generar el token JWT
+        final String jwt = jwtUtil.generateToken(userDetails.getUsername(), usuario.getRol());
 
-        return ResponseEntity.ok(new LoginResponse(jwt));
+        // IMPORTANTE: Devolvemos el token Y los datos del usuario (Nombre, Email, Rol)
+        // Esto permite que el Frontend sepa quién se logueó
+        return ResponseEntity.ok(new LoginResponse(jwt, usuario.getNombre(), usuario.getEmail(), usuario.getRol()));
     }
 }

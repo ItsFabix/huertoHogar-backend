@@ -31,20 +31,23 @@ public class UsuarioController {
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         return usuarioRepository.save(usuario);
     }
-    
+
     // Eliminar usuario
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarUsuario(@PathVariable Long id) {
         usuarioRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }
-    
-    // Actualizar rol
+
+    // Actualizar usuario completo (Nombre, Email, Rol)
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario detalles) {
          return usuarioRepository.findById(id).map(u -> {
-             u.setRol(detalles.getRol());
-             // Actualizar otros campos si es necesario
+             // Solo actualizamos si el dato viene en la petición (no es null)
+             if (detalles.getNombre() != null) u.setNombre(detalles.getNombre());
+             if (detalles.getEmail() != null) u.setEmail(detalles.getEmail());
+             if (detalles.getRol() != null) u.setRol(detalles.getRol());
+             
              return ResponseEntity.ok(usuarioRepository.save(u));
          }).orElse(ResponseEntity.notFound().build());
     }

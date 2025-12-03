@@ -6,4 +6,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class LoginResponse {
     private String token;
+    private String nombre; // <--- Nuevo campo
+    private String email;  // <--- Nuevo campo
+    private String rol;    // <--- Nuevo campo
 }
