@@ -1,8 +1,15 @@
 package com.example.huertohogar_bd.entity;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Data;
-import com.fasterxml.jackson.annotation.JsonIgnore; // <--- 1. ASEGÚRATE DE TENER ESTA IMPORTACIÓN
 
 @Entity
 @Table(name = "detalle_boleta")
@@ -14,7 +21,7 @@ public class DetalleBoleta {
 
     @ManyToOne
     @JoinColumn(name = "boleta_id")
-    @JsonIgnore // <--- 2. ESTA ANOTACIÓN ES LA CLAVE PARA EVITAR EL ERROR
+    @JsonIgnore 
     private Boleta boleta;
 
     @ManyToOne

@@ -7,5 +7,4 @@ import com.example.huertohogar_bd.entity.Producto;
 
 @Repository
 public interface ProductoRepository extends JpaRepository<Producto, String> {
-    // JpaRepository ya incluye findAll(), save(), findById(), etc.
 }

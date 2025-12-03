@@ -12,7 +12,7 @@ import lombok.Data;
 public class Producto {
 
     @Id
-    private String codigo; // Ejemplo: "FR001"
+    private String codigo; 
 
     private String nombre;
     private String categoria;
@@ -22,6 +22,6 @@ public class Producto {
     private Boolean oferta;
     private Integer precioOferta;
 
-    @Column(columnDefinition = "LONGTEXT") // Agrega esta anotación
+    @Column(columnDefinition = "LONGTEXT") 
     private String imagen;
 }

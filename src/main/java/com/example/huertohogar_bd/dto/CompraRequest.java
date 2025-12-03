@@ -1,10 +1,11 @@
 package com.example.huertohogar_bd.dto;
-import lombok.Data;
 import java.util.List;
+
+import lombok.Data;
 
 @Data
 public class CompraRequest {
-    private String direccionEnvio; // <--- AGREGAR ESTO
+    private String direccionEnvio; 
     private List<ItemPedido> items;
 
     @Data
