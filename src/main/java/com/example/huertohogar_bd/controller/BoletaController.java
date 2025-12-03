@@ -30,45 +30,41 @@ public class BoletaController {
     private UsuarioRepository usuarioRepository;
 
     @PostMapping
-    @Transactional // Si algo falla, no guarda nada (rollback)
+    @Transactional 
     public ResponseEntity<?> crearBoleta(@RequestBody CompraRequest compra) {
-        // 1. Obtener usuario autenticado desde el Token
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String emailUsuario = auth.getName();
         Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // 2. Crear la Boleta (Cabecera)
         Boleta nuevaBoleta = new Boleta();
         nuevaBoleta.setUsuario(usuario);
         nuevaBoleta.setFecha(LocalDateTime.now());
         nuevaBoleta.setEstado("pagada");
-        nuevaBoleta.setFolio(UUID.randomUUID().toString().substring(0, 8).toUpperCase()); // Folio aleatorio simple
+        nuevaBoleta.setFolio(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        
+        // GUARDAR LA DIRECCIÓN
         nuevaBoleta.setDireccionEnvio(compra.getDireccionEnvio());
 
         List<DetalleBoleta> detalles = new ArrayList<>();
         int totalCalculado = 0;
 
-        // 3. Procesar cada producto del carrito
         for (CompraRequest.ItemPedido item : compra.getItems()) {
             Producto prod = productoRepository.findById(item.getCodigo())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + item.getCodigo()));
 
-            // Verificar stock (Opcional pero recomendado)
             if (prod.getStock() < item.getCantidad()) {
                 return ResponseEntity.badRequest().body("No hay stock suficiente para: " + prod.getNombre());
             }
-            // Descontar stock
+            
             prod.setStock(prod.getStock() - item.getCantidad());
             productoRepository.save(prod);
 
-            // Crear detalle
             DetalleBoleta detalle = new DetalleBoleta();
             detalle.setBoleta(nuevaBoleta);
             detalle.setProducto(prod);
             detalle.setCantidad(item.getCantidad());
             
-            // Usar el precio de oferta si existe, sino el normal
             int precioFinal = (prod.getOferta() != null && prod.getOferta() && prod.getPrecioOferta() > 0) 
                               ? prod.getPrecioOferta() 
                               : prod.getPrecio();
@@ -82,26 +78,22 @@ public class BoletaController {
         nuevaBoleta.setTotal(totalCalculado);
         nuevaBoleta.setDetalles(detalles);
 
-        // 4. Guardar todo en cascada
         boletaRepository.save(nuevaBoleta);
 
         return ResponseEntity.ok(nuevaBoleta);
     }
 
-    // Endpoint para ver mis compras (Historial)
     @GetMapping("/mis-compras")
     public List<Boleta> obtenerMisCompras() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return boletaRepository.findByUsuarioEmail(auth.getName());
     }
 
-    // Endpoint para el Administrador/Vendedor: Ver TODAS las boletas
     @GetMapping
     public List<Boleta> listarTodasLasBoletas() {
         return boletaRepository.findAll();
     }
     
-    // Endpoint para cancelar boleta (requerido por tu frontend Admin)
     @PutMapping("/{id}/cancelar")
     public ResponseEntity<?> cancelarBoleta(@PathVariable Long id) {
         return boletaRepository.findById(id)
@@ -112,7 +104,6 @@ public class BoletaController {
                 .orElse(ResponseEntity.notFound().build());
     }
     
-    // Obtener una boleta por ID (Para el detalle)
     @GetMapping("/{id}")
     public ResponseEntity<Boleta> obtenerBoletaPorId(@PathVariable Long id) {
         return boletaRepository.findById(id)

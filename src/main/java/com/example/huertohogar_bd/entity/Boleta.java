@@ -19,14 +19,12 @@ public class Boleta {
     private String estado;
 
     @Column(length = 500) // Permitir textos largos
-    private String direccionEnvio; // <--- AGREGAR ESTO
+    private String direccionEnvio; // <--- AGREGADO
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
-    // Relación: Una boleta tiene muchos detalles
-    // CascadeType.ALL permite guardar la boleta y que sus detalles se guarden solos
     @OneToMany(mappedBy = "boleta", cascade = CascadeType.ALL)
     private List<DetalleBoleta> detalles;
 }
